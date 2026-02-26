@@ -35,5 +35,7 @@ Web ve Uygulama Destekli Randevu Yönetim Sistemi
 ---
 
 ## Dokümantasyon
+Proje dokümantosyanlarına aşağıdaki linklerden erişebilirsiniz
 1. [Gereksinim Analizi](./Gereksinim-Analizi.md)
+   
 ---
