@@ -1,1 +1,191 @@
+# API Tasarımı -
 
+**OpenAPI Spesifikasyon Dosyası:** [randes.yaml](randes.yaml)
+
+Bu doküman, OpenAPI Specification (OAS) 3.0 standardına göre hazırlanmış bir API tasarımını içermektedir.
+
+## OpenAPI Specification
+openapi: 3.0.3
+
+info:
+  title: Güzellik Salonu Randevu Yönetim API'si
+  description: >
+    Güzellik salonları için geliştirilen randevu yönetim API'si.
+    Bu API; randevu oluşturma, hizmet listeleme, personel yönetimi,
+    müşteri onayı ve AI destekli müşteri kayıp analizi işlemlerini sağlar.
+  version: 1.0.0
+  contact:
+    name: Ceyda Aksoy
+    email: ceydanurr82@gmail.com
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Development Server
+
+tags:
+  - name: Appointments
+    description: Randevu işlemleri
+  - name: Services
+    description: Hizmet işlemleri
+  - name: Personnel
+    description: Personel işlemleri
+  - name: AI
+    description: Yapay zeka işlemleri
+
+paths:
+
+  /appointments:
+    post:
+      tags:
+        - Appointments
+      summary: Randevu Kaydı Oluşturma
+      description: İşletme sahibinin; hizmet alanını (kirpik, saç vb.), ilgili personeli ve saati seçerek randevu tanımlanmasını sağlar.
+      operationId: createAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentInput'
+      responses:
+        "201":
+          description: Randevu başarıyla oluşturuldu
+
+  /personnel/notifications:
+    get:
+      tags:
+        - Personnel
+      summary: Personel Randevu Bildirimi
+      description: İşlem saati ayarlandığında ilgili personelin ekranına “Saat …’da işleminiz vardır.” bilgisi düşmesini sağlar.
+      operationId: getPersonnelNotifications
+      responses:
+        "200":
+          description: Bildirim gönderildi
+
+  /services:
+    get:
+      tags:
+        - Services
+      summary: Kategori Bazlı Hizmet Listeleme
+      description: Kirpik, saç, makyaj gibi ana kategoriler ve manikür, pedikür gibi alt hizmetlerin listelenmesini sağlar. Ayrıca her hizmete ortalama yenileme süresi eklenir.
+      operationId: listServices
+      responses:
+        "200":
+          description: Hizmet listesi getirildi
+
+  /appointments/{appointmentId}/confirmation:
+    put:
+      tags:
+        - Appointments
+      summary: Müşteri Randevu Onay Güncelleme
+      description: Müşterinin işlemden 1 gün önceki mesaja verdiği cevaba göre randevu durumunun (onaylı/iptal) güncellenmesini sağlar.
+      operationId: updateAppointmentConfirmation
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Randevu durumu güncellendi
+
+  /appointments/unconfirmed:
+    get:
+      tags:
+        - Appointments
+      summary: Onaylanmayan Randevu Teşhisi
+      description: Onaylanmayan randevuları işletme sahibine uyarı olarak göndererek teyit araması yapmasına olanak tanır.
+      operationId: getUnconfirmedAppointments
+      responses:
+        "200":
+          description: Onaylanmayan randevular listelendi
+
+  /reviews/request:
+    post:
+      tags:
+        - Appointments
+      summary: Otomatik Google Değerlendirme Mesajı
+      description: İşlem sonunda müşteriye otomatik olarak Google işletme linki ve değerlendirme isteği gönderilmesini sağlar.
+      operationId: sendReviewRequest
+      responses:
+        "200":
+          description: Mesaj gönderildi
+
+  /appointments/{appointmentId}:
+    delete:
+      tags:
+        - Appointments
+      summary: İptal Edilen Randevu Kaydını Silme
+      description: Teyit edilemeyen veya müşteri tarafından iptal edilen randevuların sistemden kaldırılmasını sağlar.
+      operationId: deleteAppointment
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Randevu silindi
+
+  /personnel/earnings:
+    get:
+      tags:
+        - Personnel
+      summary: Aylık Personel Hak Ediş Takibi
+      description: Personelin ay boyunca yaptığı işlemlerin ve bu işlemlerden kazandığı primlerin dökümünü listeler.
+      operationId: getPersonnelEarnings
+      responses:
+        "200":
+          description: Kazanç listesi getirildi
+
+  /appointments/{appointmentId}/personnel:
+    put:
+      tags:
+        - Personnel
+      summary: Personel Atama ve Güncelleme
+      description: Mevcut bir randevudaki sorumlu personelin işletme sahibi tarafından değiştirilmesini sağlar. Müşterinin özel personel talebi olması durumunda işletme sahibi bu talebi göz önünde bulundurarak atamayı güncelleyebilir.
+      operationId: updateAppointmentPersonnel
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Personel güncellendi
+
+  /ai/customer-risk:
+    post:
+      tags:
+        - AI
+      summary: AI – Akıllı Müşteri Kayıp Riski Analizi
+      description: Hizmet tanımlarındaki ortalama yenileme süresini referans alarak müşterinin son randevusundan bu yana geçen süreyi analiz eder. İlgili süre aşılmasına rağmen yeni bir randevu alınmamışsa müşteriye otomatik olarak sıcak ve samimi bir hatırlatma mesajı gönderir.
+      operationId: analyzeCustomerRisk
+      responses:
+        "200":
+          description: Analiz tamamlandı
+
+components:
+
+  schemas:
+
+    AppointmentInput:
+      type: object
+      properties:
+        customerName:
+          type: string
+        serviceId:
+          type: string
+        personnelId:
+          type: string
+        appointmentTime:
+          type: string
+          format: date-time
+      required:
+        - customerName
+        - serviceId
+        - personnelId
+        - appointmentTime
