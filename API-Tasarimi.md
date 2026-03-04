@@ -1,4 +1,4 @@
-# API Tasarımı -
+# API Tasarımı 
 
 **OpenAPI Spesifikasyon Dosyası:** [randes.yaml](randes.yaml)
 
