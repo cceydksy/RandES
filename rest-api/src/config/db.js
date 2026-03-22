@@ -1,12 +1,16 @@
 const mongoose = require("mongoose");
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) return;
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB bağlantısı başarılı: ${conn.connection.host}`);
+    await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = true;
+    console.log("MongoDB bağlandı");
   } catch (error) {
-    console.error(`MongoDB bağlantı hatası: ${error.message}`);
-    process.exit(1);
+    console.error("MongoDB bağlantı hatası:", error.message);
   }
 };
 
