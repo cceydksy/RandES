@@ -1,0 +1,36 @@
+version: '3.7'
+services:
+  randes_api:
+    build: ./rest-api
+    image: cceydksy/randes_api:app_api
+    container_name: randesapi_kapsayici
+    ports:
+      - "3000:3000"
+    networks:
+      - benimagim
+    restart: always
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/randes
+      - PORT=3000
+    command: npm start
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb_kapsayici
+    networks:
+      - benimagim
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - "27017:27017"
+
+networks:
+  benimagim:
+    driver: bridge
+    ipam:
+      driver: default
