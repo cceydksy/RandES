@@ -49,16 +49,13 @@ app.use((req, res) => {
   res.status(404).json({ message: "Bu endpoint bulunamadı" });
 });
 
-// Hata yakalama
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Sunucu hatası", error: err.message });
-});
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`RandES API çalışıyor: http://localhost:${PORT}`);
-});
-
-module.exports = app;
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`RandES API çalışıyor: http://localhost:${PORT}`);
+  });
+  module.exports = app;
+}
