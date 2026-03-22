@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const seedRoutes = require("./routes/seedRoutes");
 
 // Route dosyaları
 const appointmentRoutes = require("./routes/appointmentRoutes");
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
       personnel: "/api/v1/personnel",
       reviews: "/api/v1/reviews",
       ai: "/api/v1/ai",
+      seed: "/api/v1/seed",
     },
   });
 });
@@ -43,6 +45,7 @@ app.use("/api/v1/services", serviceRoutes);
 app.use("/api/v1/personnel", personnelRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/seed", seedRoutes);
 
 // 404 handler
 app.use((req, res) => {
