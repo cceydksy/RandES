@@ -1,126 +1,67 @@
 "use client";
 import { useState } from "react";
-import { analyzeRisk } from "../../lib/api";
+import { analyzeRisk } from "@/lib/api";
 
-export default function AIAnalizPage() {
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
+export default function AIAnalizSayfasi() {
+  const [sonuc, setSonuc] = useState(null);
+  const [yukleniyor, setYukleniyor] = useState(false);
 
-  async function runAnalysis() {
-    setLoading(true);
-    try {
-      const res = await analyzeRisk();
-      if (res.success) {
-        setResult(res);
-      } else {
-        showToast(res.message || "Analiz yapılamadı", "error");
-      }
-    } catch (err) {
-      showToast("Analiz başarısız", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function showToast(message, type) {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  async function baslat() {
+    setYukleniyor(true);
+    try { const r = await analyzeRisk(); if (r.success) setSonuc(r); }
+    catch (e) { console.error(e); } finally { setYukleniyor(false); }
   }
 
   return (
     <div>
-      <div className="page-header">
-        <h1>🤖 AI Müşteri Kayıp Analizi</h1>
-        <p>Yapay zeka ile müşteri kayıp riskini analiz edin</p>
-      </div>
+      <div className="page-header"><h1>AI Müşteri Analizi</h1><p>Müşteri kayıp riskini yapay zeka ile analiz edin</p></div>
 
-      <div className="card" style={{ textAlign: "center", marginBottom: 32 }}>
-        <p style={{ marginBottom: 16, color: "var(--text-light)" }}>
-          Bu analiz, tamamlanmış randevuları inceleyerek hizmet yenileme süresini aşmış müşterileri tespit eder
-          ve otomatik hatırlatma mesajı oluşturur.
+      <div className="card" style={{ textAlign: "center", marginBottom: 24 }}>
+        <p style={{ color: "var(--text-light)", fontSize: 13, marginBottom: 16, maxWidth: 500, margin: "0 auto 16px" }}>
+          Tamamlanmış randevuları analiz ederek yenileme süresi geçen müşterileri tespit eder ve otomatik hatırlatma mesajı oluşturur.
         </p>
-        <button className="btn btn-primary" onClick={runAnalysis} disabled={loading}>
-          {loading ? "Analiz Yapılıyor..." : "🔍 Analizi Başlat"}
-        </button>
+        <button className="btn btn-primary" onClick={baslat} disabled={yukleniyor}>{yukleniyor ? "Analiz yapılıyor..." : "Analizi Başlat"}</button>
       </div>
 
-      {result && (
+      {sonuc && (
         <>
           <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-value">{result.summary?.totalCustomers || 0}</div>
-              <div className="stat-label">Toplam Müşteri</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value" style={{ color: "var(--danger)" }}>{result.summary?.atRiskCount || 0}</div>
-              <div className="stat-label">Risk Altında</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value" style={{ color: "var(--success)" }}>{result.summary?.safeCount || 0}</div>
-              <div className="stat-label">Güvende</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">{result.summary?.riskRate || "0%"}</div>
-              <div className="stat-label">Risk Oranı</div>
-            </div>
+            {[["Toplam Müşteri", sonuc.summary?.totalCustomers, null], ["Risk Altında", sonuc.summary?.atRiskCount, "var(--danger)"], ["Güvende", sonuc.summary?.safeCount, "var(--success)"], ["Risk Oranı", sonuc.summary?.riskRate, null]].map(([l, v, c]) => (
+              <div className="stat-card" key={l}><div className="stat-label">{l}</div><div className="stat-value" style={c ? { color: c } : {}}>{v || 0}</div></div>
+            ))}
           </div>
 
-          {result.data?.atRisk?.length > 0 && (
-            <div style={{ marginBottom: 32 }}>
-              <h2 style={{ fontSize: 20, marginBottom: 16, color: "var(--danger)" }}>⚠️ Risk Altındaki Müşteriler</h2>
+          {sonuc.data?.atRisk?.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <h3 className="section-title" style={{ color: "var(--danger)" }}>Risk Altındaki Müşteriler</h3>
               <div className="card-grid">
-                {result.data.atRisk.map((c, i) => (
-                  <div className="card" key={i} style={{ borderLeft: `4px solid ${c.riskLevel === "yuksek" ? "var(--danger)" : "var(--warning)"}` }}>
+                {sonuc.data.atRisk.map((m, i) => (
+                  <div className="card" key={i} style={{ borderLeft: `3px solid ${m.riskLevel === "yuksek" ? "var(--danger)" : "var(--warning)"}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <h3 style={{ fontSize: 16 }}>{c.customerName}</h3>
-                      <span className={`badge badge-${c.riskLevel === "yuksek" ? "danger" : "warning"}`}>
-                        {c.riskLevel === "yuksek" ? "Yüksek Risk" : "Orta Risk"}
-                      </span>
+                      <h4 style={{ fontSize: 14, fontWeight: 600 }}>{m.customerName}</h4>
+                      <span className={`badge badge-${m.riskLevel === "yuksek" ? "danger" : "warning"}`}>{m.riskLevel === "yuksek" ? "Yüksek" : "Orta"}</span>
                     </div>
-                    <p style={{ fontSize: 12, color: "var(--text-light)", marginBottom: 4 }}>
-                      Son hizmet: {c.lastService}
-                    </p>
-                    <p style={{ fontSize: 12, color: "var(--text-light)", marginBottom: 12 }}>
-                      Son ziyaret: {c.daysSinceLastVisit} gün önce (limit: {c.renewalDays} gün, {c.daysOverdue} gün gecikmiş)
-                    </p>
-                    <div style={{ background: "var(--bg)", padding: 12, borderRadius: 12, fontSize: 13, lineHeight: 1.6 }}>
-                      💌 {c.reminderMessage}
-                    </div>
+                    <p style={{ fontSize: 11, color: "var(--text-light)", marginBottom: 10 }}>Son: {m.lastService} · {m.daysSinceLastVisit} gün önce · {m.daysOverdue} gün gecikmiş</p>
+                    <div style={{ background: "var(--cream)", padding: 12, borderRadius: 8, fontSize: 12, lineHeight: 1.6 }}>{m.reminderMessage}</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {result.data?.safe?.length > 0 && (
+          {sonuc.data?.safe?.length > 0 && (
             <div>
-              <h2 style={{ fontSize: 20, marginBottom: 16, color: "var(--success)" }}>✅ Güvendeki Müşteriler</h2>
+              <h3 className="section-title" style={{ color: "var(--success)" }}>Güvendeki Müşteriler</h3>
               <div className="card">
-                <div className="table-container">
-                  <table>
-                    <thead>
-                      <tr><th>Müşteri</th><th>Son Hizmet</th><th>Son Ziyaret</th><th>Kalan Gün</th></tr>
-                    </thead>
-                    <tbody>
-                      {result.data.safe.map((c, i) => (
-                        <tr key={i}>
-                          <td>{c.customerName}</td>
-                          <td>{c.lastService}</td>
-                          <td>{c.daysSinceLastVisit} gün önce</td>
-                          <td><span className="badge badge-success">{c.daysUntilRenewal} gün</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <table><thead><tr><th>Müşteri</th><th>Son Hizmet</th><th>Son Ziyaret</th><th>Kalan</th></tr></thead>
+                <tbody>{sonuc.data.safe.map((m, i) => (
+                  <tr key={i}><td>{m.customerName}</td><td>{m.lastService}</td><td>{m.daysSinceLastVisit} gün önce</td><td><span className="badge badge-success">{m.daysUntilRenewal} gün</span></td></tr>
+                ))}</tbody></table>
               </div>
             </div>
           )}
         </>
       )}
-
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
     </div>
   );
 }

@@ -2,191 +2,85 @@
 import { useState, useEffect } from "react";
 import { getServices, createService } from "@/lib/api";
 
-const categories = ["Kirpik", "Saç", "Makyaj", "Tırnak", "Cilt Bakımı", "Diğer"];
+const KATEGORILER = ["Kirpik", "Saç", "Makyaj", "Tırnak", "Cilt Bakımı", "Diğer"];
 
-const categoryIcons = {
-  "Kirpik": "👁️",
-  "Saç": "💇‍♀️",
-  "Makyaj": "💄",
-  "Tırnak": "💅",
-  "Cilt Bakımı": "✨",
-  "Diğer": "🔧",
-};
+export default function HizmetlerSayfasi() {
+  const [hizmetler, setHizmetler] = useState({});
+  const [kategoriler, setKategoriler] = useState([]);
+  const [yukleniyor, setYukleniyor] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [bildirim, setBildirim] = useState(null);
+  const [form, setForm] = useState({ name: "", category: "Kirpik", price: "", durationMinutes: "", renewalDays: "", description: "" });
 
-export default function Hizmetler() {
-  const [services, setServices] = useState({});
-  const [allCategories, setAllCategories] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    name: "", category: "Kirpik", price: "", durationMinutes: "", renewalDays: "", description: "",
-  });
+  useEffect(() => { yukle(); }, []);
 
-  useEffect(() => {
-    loadServices();
-  }, []);
-
-  async function loadServices() {
-    try {
-      const res = await getServices();
-      setServices(res.data || {});
-      setAllCategories(res.categories || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  async function yukle() {
+    try { const r = await getServices(); setHizmetler(r.data || {}); setKategoriler(r.categories || []); }
+    catch (e) { console.error(e); } finally { setYukleniyor(false); }
   }
 
-  async function handleSubmit(e) {
+  async function kaydet(e) {
     e.preventDefault();
-    const data = {
-      ...form,
-      price: Number(form.price),
-      durationMinutes: Number(form.durationMinutes),
-      renewalDays: Number(form.renewalDays),
-    };
-    await createService(data);
-    setForm({ name: "", category: "Kirpik", price: "", durationMinutes: "", renewalDays: "", description: "" });
-    setShowForm(false);
-    loadServices();
+    const r = await createService({ ...form, price: Number(form.price), durationMinutes: Number(form.durationMinutes), renewalDays: Number(form.renewalDays) });
+    if (r.success) { goster("Hizmet eklendi", "success"); setModal(false); setForm({ name: "", category: "Kirpik", price: "", durationMinutes: "", renewalDays: "", description: "" }); yukle(); }
+    else goster(r.message || "Hata", "error");
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
-      </div>
-    );
-  }
+  function goster(m, t) { setBildirim({ m, t }); setTimeout(() => setBildirim(null), 3000); }
+
+  if (yukleniyor) return <div className="loading"><div className="spinner"></div></div>;
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="page-title">💅 Hizmetler</h1>
-          <p className="page-subtitle">Salonunuzun sunduğu hizmetleri yönetin</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? "✕ Kapat" : "＋ Yeni Hizmet"}
-        </button>
+      <div className="page-header page-header-row">
+        <div><h1>Hizmetler</h1><p>Salonunuzun hizmet listesi</p></div>
+        <button className="btn btn-primary" onClick={() => setModal(true)}>+ Yeni Hizmet</button>
       </div>
 
-      {/* Yeni Hizmet Formu */}
-      {showForm && (
-        <div className="card mb-8">
-          <h3 className="text-lg font-semibold text-primary-800 mb-4">Yeni Hizmet Ekle</h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Hizmet Adı *</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Örn: İpek Kirpik"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Kategori *</label>
-              <select
-                className="select-field"
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              >
-                {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Fiyat (₺) *</label>
-              <input
-                type="number"
-                className="input-field"
-                placeholder="800"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Süre (dk) *</label>
-              <input
-                type="number"
-                className="input-field"
-                placeholder="90"
-                value={form.durationMinutes}
-                onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Yenileme Süresi (gün) *</label>
-              <input
-                type="number"
-                className="input-field"
-                placeholder="21"
-                value={form.renewalDays}
-                onChange={(e) => setForm({ ...form, renewalDays: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Açıklama</label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Hizmet açıklaması..."
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-2 lg:col-span-3">
-              <button type="submit" className="btn-primary w-full">Hizmet Ekle</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Hizmet Listesi - Kategorilere Göre */}
-      {allCategories.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-4xl mb-4">💅</p>
-          <p className="text-gray-400 text-lg">Henüz hizmet eklenmemiş</p>
-          <p className="text-gray-300 text-sm mt-2">Yukarıdaki butonu kullanarak yeni hizmet ekleyebilirsiniz</p>
-        </div>
+      {kategoriler.length === 0 ? (
+        <div className="card empty-state"><p>Henüz hizmet eklenmemiş</p><button className="btn btn-primary" onClick={() => setModal(true)}>İlk Hizmeti Ekle</button></div>
       ) : (
-        <div className="space-y-8">
-          {allCategories.map((category) => (
-            <div key={category}>
-              <h2 className="text-xl font-semibold text-primary-700 mb-4 flex items-center gap-2">
-                <span>{categoryIcons[category] || "📌"}</span>
-                {category}
-                <span className="text-sm font-normal text-primary-400">
-                  ({(services[category] || []).length} hizmet)
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(services[category] || []).map((svc) => (
-                  <div key={svc._id} className="card hover:border-primary-300">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="font-semibold text-gray-800">{svc.name}</h3>
-                      <span className="text-lg font-bold text-primary-600">{svc.price}₺</span>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-3">{svc.description}</p>
-                    <div className="flex gap-4 text-xs text-gray-400">
-                      <span>⏱ {svc.durationMinutes} dk</span>
-                      <span>🔄 {svc.renewalDays} gün</span>
-                    </div>
+        <div className="card">
+          {kategoriler.map((kat) => (
+            <div className="service-category" key={kat}>
+              <h3>{kat}</h3>
+              {(hizmetler[kat] || []).map((h) => (
+                <div className="service-item" key={h._id}>
+                  <div>
+                    <div className="service-item-name">{h.name}</div>
+                    <div className="service-item-desc">{h.description}</div>
                   </div>
-                ))}
-              </div>
+                  <div className="service-item-meta">
+                    <span className="service-item-duration">{h.durationMinutes} dk · Yenileme {h.renewalDays} gün</span>
+                    <span className="service-item-price">{h.price}₺</span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
       )}
+
+      {modal && (
+        <div className="modal-overlay" onClick={() => setModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Yeni Hizmet Ekle</h2>
+            <form onSubmit={kaydet}>
+              <div className="form-group"><label>Hizmet Adı</label><input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Örn: İpek Kirpik" /></div>
+              <div className="form-group"><label>Kategori</label><select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{KATEGORILER.map(k => <option key={k} value={k}>{k}</option>)}</select></div>
+              <div className="form-row">
+                <div className="form-group"><label>Fiyat (₺)</label><input type="number" required min="0" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
+                <div className="form-group"><label>Süre (dk)</label><input type="number" required min="1" value={form.durationMinutes} onChange={e => setForm({ ...form, durationMinutes: e.target.value })} /></div>
+              </div>
+              <div className="form-group"><label>Yenileme Süresi (gün)</label><input type="number" required min="1" value={form.renewalDays} onChange={e => setForm({ ...form, renewalDays: e.target.value })} /></div>
+              <div className="form-group"><label>Açıklama</label><textarea rows="2" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+              <div className="modal-actions"><button type="button" className="btn btn-outline" onClick={() => setModal(false)}>Vazgeç</button><button type="submit" className="btn btn-primary">Kaydet</button></div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {bildirim && <div className={`toast toast-${bildirim.t}`}>{bildirim.m}</div>}
     </div>
   );
 }

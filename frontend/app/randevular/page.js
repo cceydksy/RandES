@@ -1,211 +1,123 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getAppointments, createAppointment, deleteAppointment, updateConfirmation, getServices, getPersonnel, sendReview } from "../../lib/api";
+import { getAppointments, createAppointment, deleteAppointment, updateConfirmation, updatePersonnel, getServices, getPersonnel, sendReview } from "@/lib/api";
 
-export default function RandevularPage() {
-  const [appointments, setAppointments] = useState([]);
-  const [services, setServices] = useState([]);
-  const [personnel, setPersonnel] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [form, setForm] = useState({
-    customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "",
-  });
+export default function RandevularSayfasi() {
+  const [randevular, setRandevular] = useState([]);
+  const [hizmetler, setHizmetler] = useState([]);
+  const [personeller, setPersoneller] = useState([]);
+  const [yukleniyor, setYukleniyor] = useState(true);
+  const [modal, setModal] = useState(null);
+  const [bildirim, setBildirim] = useState(null);
+  const [form, setForm] = useState({ customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "" });
+  const [personelModal, setPersonelModal] = useState(null);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { yukle(); }, []);
 
-  async function loadData() {
+  async function yukle() {
     try {
-      const [aptRes, svcRes, prsRes] = await Promise.all([
-        getAppointments(), getServices(), getPersonnel(),
-      ]);
-      setAppointments(aptRes.data || []);
-      // Flatten services
-      const allServices = [];
-      Object.values(svcRes.data || {}).forEach((arr) => allServices.push(...arr));
-      setServices(allServices);
-      setPersonnel(prsRes.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+      const [r, h, p] = await Promise.all([getAppointments(), getServices(), getPersonnel()]);
+      setRandevular(r.data || []);
+      const tum = []; Object.values(h.data || {}).forEach(a => tum.push(...a)); setHizmetler(tum);
+      setPersoneller(p.data || []);
+    } catch (e) { console.error(e); } finally { setYukleniyor(false); }
   }
 
-  async function handleSubmit(e) {
+  async function kaydet(e) {
     e.preventDefault();
-    try {
-      const res = await createAppointment(form);
-      if (res.success) {
-        showToast("Randevu oluşturuldu!", "success");
-        setShowModal(false);
-        setForm({ customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "" });
-        loadData();
-      } else {
-        showToast(res.message || "Hata oluştu", "error");
-      }
-    } catch (err) {
-      showToast("Randevu oluşturulamadı", "error");
-    }
+    const res = await createAppointment(form);
+    if (res.success) { goster("Randevu oluşturuldu", "success"); setModal(null); setForm({ customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "" }); yukle(); }
+    else goster(res.message || "Hata", "error");
   }
 
-  async function handleDelete(id) {
-    if (!confirm("Bu randevuyu silmek istediğinize emin misiniz?")) return;
-    try {
-      const res = await deleteAppointment(id);
-      if (res.success) {
-        showToast("Randevu silindi", "success");
-        loadData();
-      }
-    } catch (err) {
-      showToast("Randevu silinemedi", "error");
-    }
+  async function sil(id) { if (!confirm("Randevuyu silmek istediğinize emin misiniz?")) return; const r = await deleteAppointment(id); if (r.success) { goster("Silindi", "success"); yukle(); } }
+  async function onayla(id, d) { const r = await updateConfirmation(id, d); if (r.success) { goster(d === "onaylandi" ? "Onaylandı" : "İptal edildi", "success"); yukle(); } }
+
+  async function personelAta(aptId, pId) {
+    const r = await updatePersonnel(aptId, pId);
+    if (r.success) { goster("Personel güncellendi", "success"); setPersonelModal(null); yukle(); }
   }
 
-  async function handleConfirm(id, status) {
-    try {
-      const res = await updateConfirmation(id, status);
-      if (res.success) {
-        showToast(`Randevu ${status === "onaylandi" ? "onaylandı" : "iptal edildi"}`, "success");
-        loadData();
-      }
-    } catch (err) {
-      showToast("İşlem başarısız", "error");
-    }
-  }
+  function goster(m, t) { setBildirim({ m, t }); setTimeout(() => setBildirim(null), 3000); }
+  const dr = (s) => ({ onaylandi: "success", iptal: "danger", tamamlandi: "info", beklemede: "warning" }[s] || "warning");
 
-  async function handleReview(id) {
-    try {
-      const res = await sendReview(id);
-      if (res.success) {
-        showToast("Değerlendirme isteği gönderildi!", "success");
-      } else {
-        showToast(res.message || "Hata oluştu", "error");
-      }
-    } catch (err) {
-      showToast("Mesaj gönderilemedi", "error");
-    }
-  }
-
-  function showToast(message, type) {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }
-
-  function getStatusBadge(status) {
-    const map = { onaylandi: "success", iptal: "danger", tamamlandi: "info", beklemede: "warning" };
-    return map[status] || "warning";
-  }
-
-  if (loading) return <div className="loading"><div className="spinner"></div></div>;
+  if (yukleniyor) return <div className="loading"><div className="spinner"></div></div>;
 
   return (
     <div>
-      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h1>Randevular</h1>
-          <p>Randevuları oluşturun ve yönetin</p>
-        </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Yeni Randevu</button>
+      <div className="page-header page-header-row">
+        <div><h1>Randevular</h1><p>Oluşturun, onaylayın ve yönetin</p></div>
+        <button className="btn btn-primary" onClick={() => setModal("yeni")}>+ Yeni Randevu</button>
       </div>
 
-      {appointments.length === 0 ? (
-        <div className="card empty-state">
-          <p>Henüz randevu bulunmuyor</p>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>İlk Randevuyu Oluştur</button>
-        </div>
+      {randevular.length === 0 ? (
+        <div className="card empty-state"><p>Henüz randevu yok</p><button className="btn btn-primary" onClick={() => setModal("yeni")}>İlk Randevuyu Oluştur</button></div>
       ) : (
-        <div className="card">
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Müşteri</th>
-                  <th>Telefon</th>
-                  <th>Hizmet</th>
-                  <th>Personel</th>
-                  <th>Tarih/Saat</th>
-                  <th>Durum</th>
-                  <th>İşlemler</th>
+        <div className="card" style={{ overflow: "auto" }}>
+          <table>
+            <thead><tr><th>Müşteri</th><th>Telefon</th><th>Hizmet</th><th>Personel</th><th>Tarih / Saat</th><th>Durum</th><th style={{ width: 200 }}>İşlem</th></tr></thead>
+            <tbody>
+              {randevular.map((r) => (
+                <tr key={r._id}>
+                  <td style={{ fontWeight: 600 }}>{r.customerName}</td>
+                  <td>{r.customerPhone}</td>
+                  <td>{r.serviceId?.name || "-"}</td>
+                  <td>
+                    <span style={{ cursor: "pointer", borderBottom: "1px dashed var(--green)" }} onClick={() => setPersonelModal(r._id)}>
+                      {r.personnelId?.name || "-"}
+                    </span>
+                  </td>
+                  <td>{new Date(r.appointmentTime).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+                  <td><span className={`badge badge-${dr(r.status)}`}>{r.status}</span></td>
+                  <td>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {r.status === "beklemede" && (<><button className="btn btn-sm btn-success" onClick={() => onayla(r._id, "onaylandi")}>Onayla</button><button className="btn btn-sm btn-danger" onClick={() => onayla(r._id, "iptal")}>İptal</button></>)}
+                      <button className="btn btn-sm btn-danger" onClick={() => sil(r._id)}>Sil</button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {appointments.map((apt) => (
-                  <tr key={apt._id}>
-                    <td><strong>{apt.customerName}</strong></td>
-                    <td>{apt.customerPhone}</td>
-                    <td>{apt.serviceId?.name || "-"}</td>
-                    <td>{apt.personnelId?.name || "-"}</td>
-                    <td>{new Date(apt.appointmentTime).toLocaleString("tr-TR")}</td>
-                    <td><span className={`badge badge-${getStatusBadge(apt.status)}`}>{apt.status}</span></td>
-                    <td>
-                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                        {apt.status === "beklemede" && (
-                          <>
-                            <button className="btn btn-sm btn-success" onClick={() => handleConfirm(apt._id, "onaylandi")}>✓ Onayla</button>
-                            <button className="btn btn-sm btn-danger" onClick={() => handleConfirm(apt._id, "iptal")}>✕ İptal</button>
-                          </>
-                        )}
-                        {apt.status === "tamamlandi" && !apt.reviewSentAt && (
-                          <button className="btn btn-sm btn-outline" onClick={() => handleReview(apt._id)}>⭐ Değerlendir</button>
-                        )}
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(apt._id)}>🗑</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Yeni Randevu Oluştur</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Müşteri Adı</label>
-                <input type="text" required value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} placeholder="Ad Soyad" />
+      {modal === "yeni" && (
+        <div className="modal-overlay" onClick={() => setModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Yeni Randevu</h2>
+            <form onSubmit={kaydet}>
+              <div className="form-group"><label>Müşteri Adı</label><input type="text" required value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })} placeholder="Ad Soyad" /></div>
+              <div className="form-group"><label>Telefon</label><input type="text" required value={form.customerPhone} onChange={e => setForm({ ...form, customerPhone: e.target.value })} placeholder="05XX XXX XXXX" /></div>
+              <div className="form-row">
+                <div className="form-group"><label>Hizmet</label><select required value={form.serviceId} onChange={e => setForm({ ...form, serviceId: e.target.value })}><option value="">Seçin</option>{hizmetler.map(h => <option key={h._id} value={h._id}>{h.name} — {h.price}₺</option>)}</select></div>
+                <div className="form-group"><label>Personel</label><select required value={form.personnelId} onChange={e => setForm({ ...form, personnelId: e.target.value })}><option value="">Seçin</option>{personeller.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}</select></div>
               </div>
-              <div className="form-group">
-                <label>Telefon</label>
-                <input type="text" required value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} placeholder="05XX XXX XXXX" />
-              </div>
-              <div className="form-group">
-                <label>Hizmet</label>
-                <select required value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
-                  <option value="">Hizmet seçin</option>
-                  {services.map((s) => <option key={s._id} value={s._id}>{s.name} - {s.price}₺</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Personel</label>
-                <select required value={form.personnelId} onChange={(e) => setForm({ ...form, personnelId: e.target.value })}>
-                  <option value="">Personel seçin</option>
-                  {personnel.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Randevu Tarihi ve Saati</label>
-                <input type="datetime-local" required value={form.appointmentTime} onChange={(e) => setForm({ ...form, appointmentTime: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Not (opsiyonel)</label>
-                <textarea rows="2" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Ek notlar..." />
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>İptal</button>
-                <button type="submit" className="btn btn-primary">Oluştur</button>
-              </div>
+              <div className="form-group"><label>Tarih ve Saat</label><input type="datetime-local" required value={form.appointmentTime} onChange={e => setForm({ ...form, appointmentTime: e.target.value })} /></div>
+              <div className="form-group"><label>Not</label><textarea rows="2" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Ek not..." /></div>
+              <div className="modal-actions"><button type="button" className="btn btn-outline" onClick={() => setModal(null)}>Vazgeç</button><button type="submit" className="btn btn-primary">Oluştur</button></div>
             </form>
           </div>
         </div>
       )}
 
-      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+      {personelModal && (
+        <div className="modal-overlay" onClick={() => setPersonelModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Personel Değiştir</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {personeller.map(p => (
+                <button key={p._id} className="btn btn-outline" style={{ justifyContent: "flex-start" }} onClick={() => personelAta(personelModal, p._id)}>
+                  {p.name} <span style={{ fontSize: 11, color: "var(--text-light)", marginLeft: 8 }}>{p.specialties?.join(", ")}</span>
+                </button>
+              ))}
+            </div>
+            <div className="modal-actions"><button className="btn btn-outline" onClick={() => setPersonelModal(null)}>Kapat</button></div>
+          </div>
+        </div>
+      )}
+
+      {bildirim && <div className={`toast toast-${bildirim.t}`}>{bildirim.m}</div>}
     </div>
   );
 }
