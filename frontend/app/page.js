@@ -1,81 +1,96 @@
 "use client";
-import { useState, useEffect } from "react";
-import { getAppointments, getServices, getPersonnel, getNotifications, getUnconfirmed } from "@/lib/api";
+import Link from "next/link";
 
-export default function Anasayfa() {
-  const [stats, setStats] = useState({ randevu: 0, bugun: 0, hizmet: 0, personel: 0 });
-  const [son, setSon] = useState([]);
-  const [bildirimler, setBildirimler] = useState([]);
-  const [onaysizlar, setOnaysizlar] = useState([]);
-  const [yukleniyor, setYukleniyor] = useState(true);
+const GALERI = [
+  "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=600&h=400&fit=crop",
+];
 
-  useEffect(() => { yukle(); }, []);
+const OZELLIKLER = [
+  { icon: "📅", baslik: "Randevu Yönetimi", aciklama: "Kolayca randevu oluşturun, onaylayın ve takip edin. Müşterilerinize otomatik hatırlatmalar gönderin." },
+  { icon: "✂️", baslik: "Hizmet Kataloğu", aciklama: "Hizmetlerinizi kategorilere ayırın, fiyat ve süre bilgilerini yönetin. Yenileme sürelerini takip edin." },
+  { icon: "👥", baslik: "Personel Takibi", aciklama: "Personelinizin uzmanlık alanlarını, randevularını ve aylık kazançlarını detaylı takip edin." },
+  { icon: "🔔", baslik: "Akıllı Bildirimler", aciklama: "Personele otomatik randevu bildirimleri gönderin. Onaylanmayan randevuları anında tespit edin." },
+  { icon: "🤖", baslik: "AI Müşteri Analizi", aciklama: "Yapay zeka ile müşteri kayıp riskini analiz edin ve otomatik hatırlatma mesajları oluşturun." },
+  { icon: "⭐", baslik: "Değerlendirme Sistemi", aciklama: "İşlem sonrası müşterilerinize otomatik Google değerlendirme isteği gönderin." },
+];
 
-  async function yukle() {
-    try {
-      const [r, h, p, b, o] = await Promise.all([getAppointments(), getServices(), getPersonnel(), getNotifications(), getUnconfirmed()]);
-      const bugun = new Date().toDateString();
-      setStats({ randevu: r.count || 0, bugun: (r.data || []).filter(x => new Date(x.appointmentTime).toDateString() === bugun).length, hizmet: h.totalCount || 0, personel: p.count || 0 });
-      setSon((r.data || []).slice(0, 5));
-      setBildirimler((b.data || []).slice(0, 4));
-      setOnaysizlar((o.data || []).slice(0, 3));
-    } catch (e) { console.error(e); } finally { setYukleniyor(false); }
-  }
-
-  const durum = (s) => ({ onaylandi: "success", iptal: "danger", tamamlandi: "info", beklemede: "warning" }[s] || "warning");
-
-  if (yukleniyor) return <div className="loading"><div className="spinner"></div></div>;
-
+export default function TanitimSayfasi() {
   return (
     <div>
-      <div className="page-header"><h1>Anasayfa</h1><p>Salonunuzun genel durumu</p></div>
-
-      <div className="stats-grid">
-        {[["Toplam Randevu", stats.randevu], ["Bugün", stats.bugun], ["Hizmet", stats.hizmet], ["Personel", stats.personel]].map(([l, v]) => (
-          <div className="stat-card" key={l}><div className="stat-label">{l}</div><div className="stat-value">{v}</div></div>
-        ))}
+      {/* NAV */}
+      <div className="land-nav">
+        <div className="land-logo">rand<span>ES</span></div>
+        <div className="land-btns">
+          <Link href="/giris" className="btn btn-outline">Giriş Yap</Link>
+          <Link href="/giris?mod=kayit" className="btn btn-brown">Kayıt Ol</Link>
+        </div>
       </div>
 
-      {onaysizlar.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h3 className="section-title">⚠️ Onay Bekleyen Randevular</h3>
-          {onaysizlar.map((o) => (
-            <div className="alert-card" key={o._id}>
-              <p><strong>{o.customerName}</strong> — {o.serviceId?.name} · {new Date(o.appointmentTime).toLocaleString("tr-TR")} · Henüz onaylanmadı</p>
+      {/* HERO */}
+      <div className="land-hero">
+        <h1>rand<span>ES</span></h1>
+        <p>Güzellik salonunuz için tasarlanmış akıllı randevu yönetim sistemi. Randevularınızı düzenleyin, personelinizi yönetin, müşterilerinizi kaybetmeyin.</p>
+        <Link href="/giris" className="btn btn-lg btn-primary">Hemen Başla</Link>
+      </div>
+
+      {/* ÖZELLİKLER */}
+      <div className="land-features">
+        <h2>Neden randES?</h2>
+        <div className="feat-grid">
+          {OZELLIKLER.map((o, i) => (
+            <div className="feat-card" key={i}>
+              <div className="feat-icon">{o.icon}</div>
+              <h3>{o.baslik}</h3>
+              <p>{o.aciklama}</p>
             </div>
           ))}
         </div>
-      )}
+      </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <div className="card">
-          <h3 className="section-title">Son Randevular</h3>
-          {son.length === 0 ? <p style={{ color: "var(--text-light)", fontSize: 13 }}>Randevu yok</p> :
-            son.map((r) => (
-              <div key={r._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{r.customerName}</div>
-                  <div style={{ fontSize: 11, color: "var(--text-light)" }}>{r.serviceId?.name} · {r.personnelId?.name}</div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 11, color: "var(--text-light)" }}>{new Date(r.appointmentTime).toLocaleDateString("tr-TR")}</div>
-                  <span className={`badge badge-${durum(r.status)}`}>{r.status}</span>
-                </div>
-              </div>
-            ))
-          }
+      {/* GALERİ */}
+      <div className="land-gallery">
+        <h2>Güzellik Sektöründe Fark Yaratın</h2>
+        <div className="gallery-track">
+          {[...GALERI, ...GALERI].map((g, i) => (
+            <div className="gallery-item" key={i}>
+              <img src={g} alt="Salon" loading="lazy" />
+            </div>
+          ))}
         </div>
+      </div>
 
-        <div className="card">
-          <h3 className="section-title">Personel Bildirimleri</h3>
-          {bildirimler.length === 0 ? <p style={{ color: "var(--text-light)", fontSize: 13 }}>Bugün bildirim yok</p> :
-            bildirimler.map((b) => (
-              <div key={b.appointmentId} style={{ padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
-                <div style={{ fontSize: 13 }}>{b.message}</div>
-              </div>
-            ))
-          }
+      {/* İLETİŞİM */}
+      <div className="land-contact" id="iletisim">
+        <h2>İletişim</h2>
+        <div className="contact-grid">
+          <div className="contact-item">
+            <div className="ci-icon">📍</div>
+            <h4>Adres</h4>
+            <p>Isparta, Türkiye</p>
+          </div>
+          <div className="contact-item">
+            <div className="ci-icon">📧</div>
+            <h4>E-posta</h4>
+            <p>ceydanurr82@gmail.com</p>
+          </div>
+          <div className="contact-item">
+            <div className="ci-icon">📞</div>
+            <h4>Telefon</h4>
+            <p>+90 5XX XXX XX XX</p>
+          </div>
         </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="land-footer">
+        <span>randES</span> · Güzellik Salonu Randevu Yönetim Sistemi · © 2026 Ceyda Nur Aksoy
       </div>
     </div>
   );
