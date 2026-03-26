@@ -2,33 +2,29 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const seedRoutes = require("./routes/seedRoutes");
 
-// Route dosyaları
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const personnelRoutes = require("./routes/personnelRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const seedRoutes = require("./routes/seedRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
-
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-
-// Veritabanı bağlantısı
 connectDB();
 
-// Ana route - API bilgisi
 app.get("/", (req, res) => {
   res.json({
     message: "RandES API - Güzellik Salonu Randevu Yönetim Sistemi",
     version: "1.0.0",
     author: "Ceyda Nur Aksoy",
     endpoints: {
+      auth: "/api/v1/auth",
       appointments: "/api/v1/appointments",
       services: "/api/v1/services",
       personnel: "/api/v1/personnel",
@@ -39,7 +35,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// Route'lar
+app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/services", serviceRoutes);
 app.use("/api/v1/personnel", personnelRoutes);
@@ -47,11 +43,9 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/seed", seedRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Bu endpoint bulunamadı" });
 });
-
 
 if (process.env.VERCEL) {
   module.exports = app;
