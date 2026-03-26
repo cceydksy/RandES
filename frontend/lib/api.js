@@ -1,29 +1,20 @@
 const API = process.env.NEXT_PUBLIC_API_URL || "https://rand-es.vercel.app/api/v1";
-
 async function f(ep, opt = {}) {
   const c = { headers: { "Content-Type": "application/json" }, ...opt };
   if (c.body && typeof c.body === "object") c.body = JSON.stringify(c.body);
   const r = await fetch(`${API}${ep}`, c);
   return await r.json();
 }
-
-// Auth
 export const register = (d) => f("/auth/register", { method: "POST", body: d });
 export const login = (d) => f("/auth/login", { method: "POST", body: d });
-
-// Services
 export const getServices = () => f("/services");
 export const createService = (d) => f("/services", { method: "POST", body: d });
 export const updateService = (id, d) => f(`/services/${id}`, { method: "PUT", body: d });
 export const deleteService = (id) => f(`/services/${id}`, { method: "DELETE" });
-
-// Personnel
 export const getPersonnel = () => f("/personnel");
 export const createPersonnel = (d) => f("/personnel", { method: "POST", body: d });
 export const updatePersonnelInfo = (id, d) => f(`/personnel/${id}`, { method: "PUT", body: d });
 export const deletePersonnelById = (id) => f(`/personnel/${id}`, { method: "DELETE" });
-
-// Appointments
 export const getAppointments = () => f("/appointments");
 export const createAppointment = (d) => f("/appointments", { method: "POST", body: d });
 export const deleteAppointment = (id) => f(`/appointments/${id}`, { method: "DELETE" });

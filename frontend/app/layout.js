@@ -1,11 +1,5 @@
 import "./globals.css";
-
-export const metadata = { title: "randES - Randevu Yönetim Sistemi" };
-
+export const metadata = { title: "RandES - Randevu Yönetim Sistemi" };
 export default function RootLayout({ children }) {
-  return (
-    <html lang="tr">
-      <body>{children}</body>
-    </html>
-  );
+  return <html lang="tr"><body>{children}</body></html>;
 }
