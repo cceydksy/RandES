@@ -6,7 +6,17 @@ const DC={"onaylandi":"s","iptal":"d","tamamlandi":"i","beklemede":"w"};
 export default function PanelHome(){
   const[s,setS]=useState({r:0,b:0,h:0,p:0});const[son,setSon]=useState([]);const[bild,setBild]=useState([]);const[onz,setOnz]=useState([]);const[lod,setLod]=useState(true);
   useEffect(()=>{yukle()},[]);
-  async function yukle(){try{const[r,h,p,b,o]=await Promise.all([getAppointments(),getServices(),getPersonnel(),getNotifications(),getUnconfirmed()]);const bug=new Date().toDateString();setS({r:r.count||0,b:(r.data||[]).filter(x=>new Date(x.appointmentTime).toDateString()===bug).length,h:h.totalCount||0,p:p.count||0});setSon((r.data||[]).slice(0,5));setBild((b.data||[]).slice(0,4));setOnz((o.data||[]).slice(0,3))}catch(e){console.error(e)}finally{setLod(false)}}
+  async function yukle(){try{
+    const[r,h,p,b]=await Promise.all([getAppointments(),getServices(),getPersonnel(),getNotifications()]);
+    const bug=new Date().toDateString();
+    const now=new Date();
+    setS({r:r.count||0,b:(r.data||[]).filter(x=>new Date(x.appointmentTime).toDateString()===bug).length,h:h.totalCount||0,p:p.count||0});
+    setSon((r.data||[]).slice(0,5));
+    setBild((b.data||[]).slice(0,4));
+    // Sadece bugün ve gelecek tarihli beklemede randevuları göster
+    const onayBekleyen=(r.data||[]).filter(x=>x.status==="beklemede"&&new Date(x.appointmentTime)>=new Date(now.getFullYear(),now.getMonth(),now.getDate()));
+    setOnz(onayBekleyen.slice(0,5));
+  }catch(e){console.error(e)}finally{setLod(false)}}
   if(lod)return <div className="ld"><div className="sp"></div></div>;
   return(<div>
     <div className="ph"><h1>Anasayfa</h1><p>Salonunuzun genel durumu</p></div>

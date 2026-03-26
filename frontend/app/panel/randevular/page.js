@@ -15,7 +15,7 @@ export default function Randevular(){
   async function yukle(){try{const[r,h,p]=await Promise.all([getAppointments(),getServices(),getPersonnel()]);setData(r.data||[]);const t=[];Object.values(h.data||{}).forEach(a=>t.push(...a));setHiz(t);setPer(p.data||[])}catch(e){console.error(e)}finally{setLod(false)}}
   async function kaydet(e){e.preventDefault();const r=await createAppointment(form);if(r.success){msg("Randevu oluşturuldu","s");setModal(null);setForm({customerName:"",customerPhone:"",serviceId:"",personnelId:"",appointmentTime:"",notes:""});yukle()}else msg(r.message||"Hata","e")}
   async function sil(id){if(!confirm("Silmek istediğinize emin misiniz?"))return;const r=await deleteAppointment(id);if(r.success){msg("Silindi","s");yukle()}}
-  async function onayla(id,d){const r=await updateConfirmation(id,d);if(r.success){msg(d==="onaylandi"?"Onaylandı":"İptal edildi","s");yukle()}}
+  async function durumDegistir(id,d){const r=await updateConfirmation(id,d);if(r.success){msg(d==="onaylandi"?"Onaylandı":d==="iptal"?"İptal edildi":"Tamamlandı olarak işaretlendi","s");yukle()}}
   async function pAta(a,p){const r=await updatePersonnel(a,p);if(r.success){msg("Personel güncellendi","s");setPMod(null);yukle()}}
   function msg(m,t){setToast({m,t});setTimeout(()=>setToast(null),3000)}
 
@@ -25,11 +25,42 @@ export default function Randevular(){
     return b.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
   }
 
-  // Sayfalama
+  function gecmisMi(apt){
+    return new Date(apt.appointmentTime) < new Date();
+  }
+
+  function butonlar(r){
+    const gecmis = gecmisMi(r);
+    const btns = [];
+
+    if(r.status==="beklemede"){
+      if(!gecmis){
+        // Gelecek tarihli beklemede → Onayla/İptal
+        btns.push(<button key="o" className="btn btn-sm btn-s" onClick={()=>durumDegistir(r._id,"onaylandi")}>Onayla</button>);
+        btns.push(<button key="i" className="btn btn-sm btn-d" onClick={()=>durumDegistir(r._id,"iptal")}>İptal</button>);
+      } else {
+        // Geçmiş tarihli beklemede → Tamamlandı veya İptal
+        btns.push(<button key="t" className="btn btn-sm btn-s" onClick={()=>durumDegistir(r._id,"tamamlandi")}>Tamamlandı</button>);
+        btns.push(<button key="i" className="btn btn-sm btn-d" onClick={()=>durumDegistir(r._id,"iptal")}>İptal</button>);
+      }
+    }
+
+    if(r.status==="onaylandi"){
+      if(gecmis){
+        // Geçmiş tarihli onaylanmış → Tamamlandı yapılabilir
+        btns.push(<button key="t" className="btn btn-sm btn-s" onClick={()=>durumDegistir(r._id,"tamamlandi")}>Tamamlandı</button>);
+      }
+      // Onaylanmış her zaman iptal edilebilir
+      btns.push(<button key="i" className="btn btn-sm btn-d" onClick={()=>durumDegistir(r._id,"iptal")}>İptal</button>);
+    }
+
+    // Sil her zaman var
+    btns.push(<button key="s" className="btn btn-sm btn-d" onClick={()=>sil(r._id)}>Sil</button>);
+    return btns;
+  }
+
   const totalPages=Math.ceil(data.length/PER_PAGE);
   const paged=data.slice((page-1)*PER_PAGE,page*PER_PAGE);
-
-  // Gün bazlı gruplama
   const grouped={};
   paged.forEach(r=>{const d=new Date(r.appointmentTime).toLocaleDateString("tr-TR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});if(!grouped[d])grouped[d]=[];grouped[d].push(r)});
 
@@ -41,25 +72,22 @@ export default function Randevular(){
       {Object.entries(grouped).map(([gun,list])=>(<div className="day-group" key={gun}>
         <div className="day-label">{gun}</div>
         <div className="card" style={{overflow:"auto"}}>
-          <table><thead><tr><th>Müşteri</th><th>Telefon</th><th>Hizmet</th><th>Personel</th><th>Başlangıç</th><th>Bitiş</th><th>Durum</th><th style={{width:180}}>İşlem</th></tr></thead>
+          <table><thead><tr><th>Müşteri</th><th>Telefon</th><th>Hizmet</th><th>Personel</th><th>Başlangıç</th><th>Bitiş</th><th>Durum</th><th style={{width:220}}>İşlem</th></tr></thead>
           <tbody>{list.map(r=>(<tr key={r._id}>
             <td style={{fontWeight:600}}>{r.customerName}</td><td>{r.customerPhone}</td><td>{r.serviceId?.name||"-"}</td>
             <td><span style={{cursor:"pointer",borderBottom:"1px dashed var(--olive)"}} onClick={()=>setPMod(r._id)}>{r.personnelId?.name||"-"}</span></td>
             <td>{new Date(r.appointmentTime).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}</td>
             <td>{bitis(r)}</td>
             <td><span className={`badge badge-${DC[r.status]||"w"}`}>{DT[r.status]||r.status}</span></td>
-            <td><div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-              {r.status==="beklemede"&&<><button className="btn btn-sm btn-s" onClick={()=>onayla(r._id,"onaylandi")}>Onayla</button><button className="btn btn-sm btn-d" onClick={()=>onayla(r._id,"iptal")}>İptal</button></>}
-              <button className="btn btn-sm btn-d" onClick={()=>sil(r._id)}>Sil</button>
-            </div></td>
+            <td><div style={{display:"flex",gap:4,flexWrap:"wrap"}}>{butonlar(r)}</div></td>
           </tr>))}</tbody></table>
         </div>
       </div>))}
-      <div className="pag">
+      {totalPages>1&&<div className="pag">
         <button disabled={page===1} onClick={()=>setPage(page-1)}>← Önceki</button>
         <span>{page} / {totalPages}</span>
         <button disabled={page===totalPages} onClick={()=>setPage(page+1)}>Sonraki →</button>
-      </div>
+      </div>}
     </div>}
 
     {modal==="y"&&<div className="mo-ov" onClick={()=>setModal(null)}><div className="mo" onClick={e=>e.stopPropagation()}><h2>Yeni Randevu</h2><form onSubmit={kaydet}>
