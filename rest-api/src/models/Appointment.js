@@ -28,7 +28,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["beklemede", "onaylandi", "iptal", "tamamlandi"],
+      enum: ["beklemede", "onaylandı", "iptal", "tamamlandı"],
       default: "beklemede",
     },
     confirmationSentAt: {

@@ -3,14 +3,17 @@ const router = express.Router();
 const Service = require("../models/Service");
 const Personnel = require("../models/Personnel");
 const Appointment = require("../models/Appointment");
+const connectDB = require("../config/db");
 
 // POST /api/v1/seed — Veritabanına örnek veri yükle
 router.post("/", async (req, res) => {
   try {
+    await connectDB();
+
     // Mevcut verileri temizle
-    await Service.deleteMany({});
-    await Personnel.deleteMany({});
     await Appointment.deleteMany({});
+    await Personnel.deleteMany({});
+    await Service.deleteMany({});
 
     // Hizmetler
     const services = [
@@ -44,15 +47,15 @@ router.post("/", async (req, res) => {
     // Randevular
     const now = new Date();
     const appointments = [
-      { customerName: "Selin Acar", customerPhone: "05421110022", serviceId: createdServices[0]._id, personnelId: createdPersonnel[0]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0), status: "onaylandi" },
+      { customerName: "Selin Acar", customerPhone: "05421110022", serviceId: createdServices[0]._id, personnelId: createdPersonnel[0]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0), status: "onaylandı" },
       { customerName: "Merve Özkan", customerPhone: "05422220033", serviceId: createdServices[3]._id, personnelId: createdPersonnel[1]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 30), status: "beklemede" },
       { customerName: "Deniz Yıldız", customerPhone: "05423330044", serviceId: createdServices[8]._id, personnelId: createdPersonnel[2]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0), status: "beklemede" },
       { customerName: "Büşra Kılıç", customerPhone: "05424440055", serviceId: createdServices[6]._id, personnelId: createdPersonnel[3]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0), status: "beklemede" },
-      { customerName: "Selin Acar", customerPhone: "05421110022", serviceId: createdServices[0]._id, personnelId: createdPersonnel[0]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 25), status: "tamamlandi" },
-      { customerName: "Merve Özkan", customerPhone: "05422220033", serviceId: createdServices[4]._id, personnelId: createdPersonnel[1]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 50), status: "tamamlandi" },
-      { customerName: "Deniz Yıldız", customerPhone: "05423330044", serviceId: createdServices[8]._id, personnelId: createdPersonnel[2]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7), status: "tamamlandi" },
-      { customerName: "Aylin Demir", customerPhone: "05425550066", serviceId: createdServices[11]._id, personnelId: createdPersonnel[1]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 40), status: "tamamlandi" },
-      { customerName: "Gamze Şahin", customerPhone: "05426660077", serviceId: createdServices[1]._id, personnelId: createdPersonnel[3]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3), status: "tamamlandi" },
+      { customerName: "Selin Acar", customerPhone: "05421110022", serviceId: createdServices[0]._id, personnelId: createdPersonnel[0]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 25), status: "tamamlandı" },
+      { customerName: "Merve Özkan", customerPhone: "05422220033", serviceId: createdServices[4]._id, personnelId: createdPersonnel[1]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 50), status: "tamamlandı" },
+      { customerName: "Deniz Yıldız", customerPhone: "05423330044", serviceId: createdServices[8]._id, personnelId: createdPersonnel[2]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7), status: "tamamlandı" },
+      { customerName: "Aylin Demir", customerPhone: "05425550066", serviceId: createdServices[11]._id, personnelId: createdPersonnel[1]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 40), status: "tamamlandı" },
+      { customerName: "Gamze Şahin", customerPhone: "05426660077", serviceId: createdServices[1]._id, personnelId: createdPersonnel[3]._id, appointmentTime: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3), status: "tamamlandı" },
     ];
 
     const createdAppointments = await Appointment.insertMany(appointments);

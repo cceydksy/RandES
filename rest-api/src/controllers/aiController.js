@@ -2,7 +2,7 @@ const Appointment = require("../models/Appointment");
 
 const analyzeCustomerRisk = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ status: "tamamlandi" })
+    const appointments = await Appointment.find({ status: "tamamlandı" })
       .populate("serviceId", "name category renewalDays price")
       .populate("personnelId", "name")
       .sort({ appointmentTime: -1 });

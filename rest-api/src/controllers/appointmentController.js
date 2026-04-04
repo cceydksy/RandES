@@ -15,8 +15,8 @@ const updateAppointmentConfirmation = async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const { status } = req.body;
-    if (!["onaylandi", "iptal", "tamamlandi"].includes(status)) {
-      return res.status(400).json({ success: false, message: "Geçersiz durum. 'onaylandi', 'iptal' veya 'tamamlandi' olmalıdır" });
+    if (!["onaylandı", "iptal", "tamamlandı"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Geçersiz durum. 'onaylandı', 'iptal' veya 'tamamlandı' olmalıdır" });
     }
     const appointment = await Appointment.findByIdAndUpdate(appointmentId, { status, confirmationSentAt: new Date() }, { new: true }).populate("serviceId", "name category price").populate("personnelId", "name phone");
     if (!appointment) return res.status(404).json({ success: false, message: "Randevu bulunamadı" });

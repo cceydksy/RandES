@@ -6,7 +6,7 @@ const getPersonnelNotifications = async (req, res) => {
     const { personnelId } = req.query;
     const now = new Date();
     const endOfDay = new Date(now); endOfDay.setHours(23, 59, 59, 999);
-    let filter = { appointmentTime: { $gte: now, $lte: endOfDay }, status: { $in: ["beklemede", "onaylandi"] } };
+    let filter = { appointmentTime: { $gte: now, $lte: endOfDay }, status: { $in: ["beklemede", "onaylandı"] } };
     if (personnelId) filter.personnelId = personnelId;
     const appointments = await Appointment.find(filter).populate("serviceId", "name category durationMinutes").populate("personnelId", "name phone").sort({ appointmentTime: 1 });
     const notifications = appointments.map((apt) => {
@@ -25,7 +25,7 @@ const getPersonnelEarnings = async (req, res) => {
     const targetYear = year ? parseInt(year) : now.getFullYear();
     const startDate = new Date(targetYear, targetMonth, 1);
     const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
-    let filter = { appointmentTime: { $gte: startDate, $lte: endDate }, status: "tamamlandi" };
+    let filter = { appointmentTime: { $gte: startDate, $lte: endDate }, status: "tamamlandı" };
     if (personnelId) filter.personnelId = personnelId;
     const appointments = await Appointment.find(filter).populate("serviceId", "name category price").populate("personnelId", "name commissionRate");
     const earningsMap = {};
