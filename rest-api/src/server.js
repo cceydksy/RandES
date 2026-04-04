@@ -64,4 +64,4 @@ if (process.env.VERCEL) {
     console.log(`RandES API çalışıyor: http://localhost:${PORT}`);
   });
   module.exports = app;
-}
+}// redeploy
