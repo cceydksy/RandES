@@ -16,7 +16,16 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-connectDB();
+
+// Her istekten önce MongoDB bağlantısını garanti et
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Veritabanı bağlantı hatası", error: error.message });
+  }
+});
 
 app.get("/", (req, res) => {
   res.json({

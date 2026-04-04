@@ -3,13 +3,10 @@ const router = express.Router();
 const Service = require("../models/Service");
 const Personnel = require("../models/Personnel");
 const Appointment = require("../models/Appointment");
-const connectDB = require("../config/db");
 
 // POST /api/v1/seed — Veritabanına örnek veri yükle
 router.post("/", async (req, res) => {
   try {
-    await connectDB();
-
     // Mevcut verileri temizle
     await Appointment.deleteMany({});
     await Personnel.deleteMany({});
