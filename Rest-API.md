@@ -1,7 +1,7 @@
 # RandES REST API
 
 ## API Adresi
-https://rand-es.vercel.app/api/v1
+https://rand-es.vercel.app
 
 ## Test Videosu
 https://youtu.be/k6M9qZGHjZM
