@@ -39,6 +39,22 @@ const getUnconfirmedAppointments = async (req, res) => {
   }
 };
 
+const updateAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { customerName, customerPhone, serviceId, personnelId, appointmentTime, notes } = req.body;
+    const appointment = await Appointment.findByIdAndUpdate(
+      appointmentId,
+      { customerName, customerPhone, serviceId, personnelId, appointmentTime, notes },
+      { new: true, runValidators: true }
+    ).populate("serviceId", "name category price durationMinutes").populate("personnelId", "name phone");
+    if (!appointment) return res.status(404).json({ success: false, message: "Randevu bulunamadı" });
+    res.status(200).json({ success: true, message: "Randevu başarıyla güncellendi", data: appointment });
+  } catch (error) {
+    res.status(400).json({ success: false, message: "Randevu güncellenemedi", error: error.message });
+  }
+};
+
 const deleteAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
@@ -60,4 +76,4 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
-module.exports = { createAppointment, updateAppointmentConfirmation, getUnconfirmedAppointments, deleteAppointment, getAllAppointments };
+module.exports = { createAppointment, updateAppointment, updateAppointmentConfirmation, getUnconfirmedAppointments, deleteAppointment, getAllAppointments };

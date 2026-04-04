@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   createAppointment,
+  updateAppointment,
   updateAppointmentConfirmation,
   getUnconfirmedAppointments,
   deleteAppointment,
@@ -19,6 +20,9 @@ router.post("/", createAppointment);
 
 // GET  /api/v1/appointments/unconfirmed — Onaylanmayan randevular (Gereksinim 5)
 router.get("/unconfirmed", getUnconfirmedAppointments);
+
+// PUT  /api/v1/appointments/:appointmentId — Randevu düzenle
+router.put("/:appointmentId", updateAppointment);
 
 // PUT  /api/v1/appointments/:appointmentId/confirmation — Onay güncelle (Gereksinim 4)
 router.put("/:appointmentId/confirmation", updateAppointmentConfirmation);
