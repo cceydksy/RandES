@@ -88,10 +88,9 @@ export default function Randevular() {
   }
 
   function saatiDuzelt(t) {
-    // datetime-local input'u local saat gönderir, UTC'ye çevirirken timezone farkını koru
+    // datetime-local "2026-04-06T09:00" formatında gelir, saniye ekleyerek gönder
     if (!t) return t;
-    const d = new Date(t);
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+    return t + ":00";
   }
 
   async function kaydet(e) {
