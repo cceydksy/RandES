@@ -198,14 +198,19 @@ export default function Randevular() {
               {gunler.map((g, gi) => {
                 const randevular = randevuBul(g, saat);
                 return (
-                  <td key={gi} style={{ padding: 2, verticalAlign: "top", height: 52, borderRight: "1px solid var(--border)", background: ayniGun(g, bugun) ? "rgba(69,87,99,0.03)" : "transparent" }}>
+                  <td key={gi} style={{ padding: 2, verticalAlign: "top", height: 52, borderRight: "1px solid var(--border)", background: ayniGun(g, bugun) ? "rgba(69,87,99,0.03)" : "transparent", position: "relative" }}>
                     {randevular.map(r => {
                       const renk = perRenk[r.personnelId?._id] || "#645d3b";
+                      const t = new Date(r.appointmentTime);
+                      const dakika = t.getMinutes();
+                      const sure = r.serviceId?.durationMinutes || 30;
+                      const topPx = (dakika / 60) * 52;
+                      const heightPx = (sure / 60) * 52;
                       return (
                         <div key={r._id} onClick={() => setDetay(r)}
-                          style={{ background: renk, color: "#fff", padding: "3px 6px", borderRadius: 6, fontSize: 10, marginBottom: 2, cursor: "pointer", lineHeight: 1.3, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                          <div style={{ fontWeight: 700 }}>{r.customerName}</div>
-                          <div style={{ opacity: 0.85 }}>{r.serviceId?.name}</div>
+                          style={{ position: "absolute", top: topPx + 2, left: 2, right: 2, height: heightPx - 2, background: renk, color: "#fff", padding: "3px 6px", borderRadius: 6, fontSize: 10, cursor: "pointer", lineHeight: 1.3, overflow: "hidden", zIndex: 5 }}>
+                          <div style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.customerName}</div>
+                          <div style={{ opacity: 0.85, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.serviceId?.name}</div>
                         </div>
                       );
                     })}
