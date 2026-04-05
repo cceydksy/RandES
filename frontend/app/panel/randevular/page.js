@@ -88,9 +88,18 @@ export default function Randevular() {
   }
 
   function saatiDuzelt(t) {
-    // datetime-local "2026-04-06T09:00" formatında gelir, saniye ekleyerek gönder
+    // datetime-local "2026-04-06T09:00" olarak gelir
+    // Bunu local timezone ile ISO string'e çevir (UTC'ye dönüşmesin)
     if (!t) return t;
-    return t + ":00";
+    const [tarih, saat] = t.split("T");
+    const [yil, ay, gun] = tarih.split("-").map(Number);
+    const [ss, dd] = saat.split(":").map(Number);
+    const d = new Date(yil, ay - 1, gun, ss, dd, 0);
+    // Timezone offset'i koruyarak ISO string oluştur
+    const off = -d.getTimezoneOffset();
+    const pad = n => String(Math.abs(n)).padStart(2, "0");
+    const sign = off >= 0 ? "+" : "-";
+    return `${yil}-${pad(ay)}-${pad(gun)}T${pad(ss)}:${pad(dd)}:00${sign}${pad(Math.floor(off / 60))}:${pad(off % 60)}`;
   }
 
   async function kaydet(e) {
