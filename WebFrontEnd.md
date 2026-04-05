@@ -1,8 +1,8 @@
 # Web Frontend
 
-**Frontend Domain:** https://rand-es-9waw.vercel.app
+**Front-end Domain:** https://rand-es-9waw.vercel.app
 
-**Frontend Test Videosu:** https://youtu.be/r5IOdYKQoIg
+**Front-end Test Videosu:** https://youtu.be/r5IOdYKQoIg
 
 ## 1. Randevu Oluşturma Sayfası
 - **API Endpoint:** `POST /appointments`
