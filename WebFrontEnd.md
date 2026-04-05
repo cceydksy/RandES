@@ -1,5 +1,7 @@
-# Ceyda Nur Aksoy'un Web Frontend Görevleri
+# Web Frontend
+
 **Frontend Domain:** https://rand-es-9waw.vercel.app
+
 **Frontend Test Videosu:** https://youtu.be/r5IOdYKQoIg
 
 ## 1. Randevu Oluşturma Sayfası
