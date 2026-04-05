@@ -75,7 +75,7 @@
 - **Response:** Risk altındaki müşteriler (atRisk), güvenli müşteriler (safe) ve özet istatistikler
 - **AI Entegrasyonu:** Gemini 2.0 Flash modeli ile sıcak ve samimi WhatsApp formatında Türkçe mesajlar
 
-## 10. İptal Edilen Randevu Kaydını Silme
+## 10. Randevu Kaydını Silme
 - **API Endpoint:** `DELETE /appointments/:appointmentId`
 - **Görev:** Teyit edilemeyen veya iptal edilen randevuların sistemden kaldırılması
 - **Request Body:** Yok
