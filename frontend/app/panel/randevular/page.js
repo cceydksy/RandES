@@ -87,15 +87,24 @@ export default function Randevular() {
     setModal("d");
   }
 
+  function saatiDuzelt(t) {
+    // datetime-local input'u local saat gönderir, UTC'ye çevirirken timezone farkını koru
+    if (!t) return t;
+    const d = new Date(t);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+  }
+
   async function kaydet(e) {
     e.preventDefault();
     if (form.personnelId && filtreliPersonel.length > 0 && !filtreliPersonel.find(p => p._id === form.personnelId)) { msg("Seçilen personel bu hizmette uzman değil!", "e"); return }
-    const r = await createAppointment(form); if (r.success) { msg("Randevu oluşturuldu", "s"); setModal(null); setForm({ customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "" }); yukle() } else msg(r.message || "Hata", "e")
+    const veri = { ...form, appointmentTime: saatiDuzelt(form.appointmentTime) };
+    const r = await createAppointment(veri); if (r.success) { msg("Randevu oluşturuldu", "s"); setModal(null); setForm({ customerName: "", customerPhone: "", serviceId: "", personnelId: "", appointmentTime: "", notes: "" }); yukle() } else msg(r.message || "Hata", "e")
   }
 
   async function guncelle(e) {
     e.preventDefault();
-    const r = await updateAppointment(editId, editForm);
+    const veri = { ...editForm, appointmentTime: saatiDuzelt(editForm.appointmentTime) };
+    const r = await updateAppointment(editId, veri);
     if (r.success) { msg("Randevu güncellendi", "s"); setModal(null); setEditId(null); yukle() } else msg(r.message || "Güncelleme başarısız", "e")
   }
 
