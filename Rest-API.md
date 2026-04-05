@@ -1,5 +1,7 @@
-# Ceyda Nur Aksoy'un REST API Görevleri
+# REST API
+
 **REST API Domain:** https://rand-es.vercel.app/api/v1
+
 **REST API Test Videosu:** https://youtu.be/k6M9qZGHjZM
 
 ## 1. Randevu Kaydı Oluşturma
