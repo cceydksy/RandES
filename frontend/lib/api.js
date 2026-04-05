@@ -17,6 +17,7 @@ export const updatePersonnelInfo = (id, d) => f(`/personnel/${id}`, { method: "P
 export const deletePersonnelById = (id) => f(`/personnel/${id}`, { method: "DELETE" });
 export const getAppointments = () => f("/appointments");
 export const createAppointment = (d) => f("/appointments", { method: "POST", body: d });
+export const updateAppointment = (id, d) => f(`/appointments/${id}`, { method: "PUT", body: d });
 export const deleteAppointment = (id) => f(`/appointments/${id}`, { method: "DELETE" });
 export const updateConfirmation = (id, s) => f(`/appointments/${id}/confirmation`, { method: "PUT", body: { status: s } });
 export const updatePersonnel = (a, p) => f(`/appointments/${a}/personnel`, { method: "PUT", body: { personnelId: p } });
