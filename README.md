@@ -1,6 +1,6 @@
 # RandES
 ---
-
+![RandES Tanıtım](./randes_tanitim.svg)
 
 
 
