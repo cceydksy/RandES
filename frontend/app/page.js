@@ -1,20 +1,88 @@
 "use client";
 import Link from "next/link";
-const FOTOS=["/gallery/IMG_1383.jpg","/gallery/IMG_1608.jpg","/gallery/IMG_5594.jpg","/gallery/IMG_6025.jpg","/gallery/IMG_7101.jpg","/gallery/IMG_7542.jpg","/gallery/IMG_7900.jpg","/gallery/IMG_8179.jpg","/gallery/IMG_8250.jpg","/gallery/IMG_9964.jpg"];
+import { useEffect, useState } from "react";
+
 const O=[
-  {i:"📅",t:"Randevu Yönetimi",d:"Kolayca randevu oluşturun, onaylayın ve takip edin. Başlangıç ve bitiş saatleri otomatik hesaplanır."},
-  {i:"✂️",t:"Hizmet Kataloğu",d:"Hizmetlerinizi kategorilere ayırın, fiyat ve süre bilgilerini yönetin. Özel kategoriler oluşturun."},
-  {i:"👥",t:"Personel Takibi",d:"Personelinizin uzmanlık alanlarını, randevularını ve aylık kazançlarını detaylı takip edin."},
-  {i:"🔔",t:"Akıllı Bildirimler",d:"Personele otomatik randevu bildirimleri. Onaylanmayan randevuları anında tespit edin."},
-  {i:"🤖",t:"AI Müşteri Analizi",d:"Yapay zeka ile müşteri kayıp riskini analiz edin ve otomatik hatırlatma mesajları oluşturun."},
-  {i:"⭐",t:"Değerlendirme",d:"İşlem sonrası müşterilerinize WhatsApp üzerinden tek tıkla değerlendirme isteği gönderin."},
+  {i:"📅",t:"Akıllı Takvim",d:"Haftalık takvim görünümü, sürükle-bırak randevu ve otomatik saat hesaplama."},
+  {i:"💬",t:"SMS Hatırlatma",d:"Müşterilerinize otomatik randevu hatırlatma mesajları gönderin."},
+  {i:"👥",t:"Personel Yönetimi",d:"Uzmanlık alanları, prim oranları ve aylık hak ediş takibi."},
+  {i:"🤖",t:"AI Analiz",d:"Gemini AI ile müşteri kayıp riski tespiti ve kişisel hatırlatma mesajları."},
+  {i:"✂️",t:"Hizmet Kataloğu",d:"Kategorize hizmetler, fiyat ve süre yönetimi."},
+  {i:"📊",t:"Gelir Raporu",d:"Aylık personel bazında gelir, komisyon ve performans dökümü."},
 ];
-export default function Landing(){return(<div>
-  <div className="ln-nav"><div className="ln-logo">Rand<span>ES</span></div><div className="ln-btns"><Link href="/giris" className="btn btn-o">Giriş Yap</Link><Link href="/giris?mod=kayit" className="btn btn-m">Kayıt Ol</Link></div></div>
-  <div className="ln-hero"><h1>Rand<span>ES</span></h1><p>Güzellik salonunuz için tasarlanmış akıllı randevu yönetim sistemi. Randevularınızı düzenleyin, personelinizi yönetin, müşterilerinizi kaybetmeyin.</p><Link href="/giris" className="btn btn-lg btn-p">Hemen Başla</Link></div>
-  <div style={{height:48,background:"var(--sand)"}}></div>
-  <div className="ln-gal"><div className="gal-t">{[...FOTOS,...FOTOS].map((g,i)=>(<div className="gal-i" key={i}><img src={g} alt="" loading="lazy"/></div>))}</div></div>
-  <div className="ln-feat"><h2>Neden RandES?</h2><div className="feat-g">{O.map((o,i)=>(<div className="feat-c" key={i}><div className="feat-i">{o.i}</div><h3>{o.t}</h3><p>{o.d}</p></div>))}</div></div>
-  <div className="ln-ct"><h2>İletişim</h2><p>📧 <a href="mailto:ceydanurr82@gmail.com">ceydanurr82@gmail.com</a></p></div>
-  <div className="ln-ft"><span>RandES</span> · Güzellik Salonu Randevu Yönetim Sistemi · © 2026 Ceyda Nur Aksoy</div>
-</div>)}
+
+const STATS=[
+  {n:"148",l:"SMS Gönderildi"},
+  {n:"%94",l:"Onay Oranı"},
+  {n:"12",l:"Günlük Randevu"},
+  {n:"₺3.450",l:"Günlük Gelir"},
+];
+
+const MSGS=[
+  {type:"out",name:"RandES",text:"Merhaba Ayşe Hanım, yarın saat 14:00'te Saç Bakımı randevunuz bulunmaktadır. ✨"},
+  {type:"in",name:"Ayşe",text:"Teşekkürler, onaylıyorum ✓"},
+  {type:"out",name:"RandES",text:"Merve Hanım, sizi özledik! Size özel %15 indirim fırsatı 💜"},
+];
+
+export default function Landing(){
+  const [vis, setVis] = useState(false);
+  useEffect(()=>{ setVis(true) },[]);
+
+  return(<div>
+    <div className="ln-nav">
+      <div className="ln-logo">Rand<span>ES</span></div>
+      <div className="ln-btns">
+        <Link href="/giris" className="btn btn-o">Giriş Yap</Link>
+        <Link href="/giris?mod=kayit" className="btn btn-m">Kayıt Ol</Link>
+      </div>
+    </div>
+
+    <div className="ln-hero">
+      <div className="hero-left" style={{opacity: vis ? 1 : 0, transform: vis ? 'translateY(0)' : 'translateY(30px)', transition: 'all 0.8s ease'}}>
+        <p className="hero-tag">✨ Güzellik Salonları İçin</p>
+        <h1>Randevudan<br/>hatırlatmaya,<br/><span>tek panelde.</span></h1>
+        <p className="hero-desc">Randevularınızı yönetin, müşterilerinize otomatik SMS gönderin, yapay zeka ile kayıp riskini analiz edin.</p>
+        <div className="hero-btns">
+          <Link href="/giris?mod=kayit" className="btn btn-lg btn-p">Ücretsiz Deneyin</Link>
+          <Link href="#ozellikler" className="btn btn-lg btn-ghost">Özellikleri Gör ↓</Link>
+        </div>
+      </div>
+      <div className="hero-right" style={{opacity: vis ? 1 : 0, transform: vis ? 'translateY(0)' : 'translateY(40px)', transition: 'all 1s ease 0.3s'}}>
+        <div className="phone-mock">
+          <div className="phone-header"><span>RandES</span><small>SMS Bildirimleri</small></div>
+          <div className="phone-msgs">
+            {MSGS.map((m,i)=>(<div key={i} className={`sms sms-${m.type}`}><strong>{m.name}</strong><p>{m.text}</p></div>))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="ln-stats">
+      {STATS.map((s,i)=>(<div key={i} className="stat-item"><span className="stat-num">{s.n}</span><span className="stat-lbl">{s.l}</span></div>))}
+    </div>
+
+    <div className="ln-feat" id="ozellikler">
+      <p className="feat-tag">Özellikler</p>
+      <h2>Salonunuz İçin Her Şey Tek Yerde</h2>
+      <div className="feat-g">
+        {O.map((o,i)=>(<div className="feat-c" key={i}>
+          <div className="feat-i">{o.i}</div>
+          <h3>{o.t}</h3>
+          <p>{o.d}</p>
+        </div>))}
+      </div>
+    </div>
+
+    <div className="ln-cta">
+      <h2>Salonunuzu Dijitale Taşıyın</h2>
+      <p>Hemen kayıt olun, randevu yönetiminizi kolaylaştırın.</p>
+      <Link href="/giris?mod=kayit" className="btn btn-lg btn-p">Kayıt Ol</Link>
+    </div>
+
+    <div className="ln-ct">
+      <h2>İletişim</h2>
+      <p>📧 <a href="mailto:ceydanurr82@gmail.com">ceydanurr82@gmail.com</a></p>
+    </div>
+
+    <div className="ln-ft"><span>RandES</span> · Güzellik Salonu Randevu Yönetim Sistemi · © 2026 Ceyda Nur Aksoy</div>
+  </div>)}
